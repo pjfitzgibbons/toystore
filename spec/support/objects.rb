@@ -18,20 +18,19 @@ module Support
 
     def create_object(object)
       remove_object(object)
-      Kernel.const_set(object, Object(object))
+      Object.const_set(object, Object(object))
     end
 
     def remove_object(object)
-      Kernel.send(:remove_const, object) if Kernel.const_defined?(object)
+      Object.send(:remove_const, object) if Kernel.const_defined?(object)
     end
 
     def Object(name=nil)
       Class.new.tap do |object|
-        object.class_eval """
-          def self.name; '#{name}' end
-          def self.to_s; '#{name}' end
-        """ if name
-        object.send(:include, Toy::Object)
+        object.class_eval "" "
+          include Toy::Object
+          attribute :name, String
+        " "" if name
       end
     end
   end

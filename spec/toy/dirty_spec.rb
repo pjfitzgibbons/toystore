@@ -43,14 +43,12 @@ describe Toy::Dirty do
 
   it "has attribute was method" do
     user = User.new(:name => 'John')
-    user.name = 'Steve'
-    user.name_was.should == 'John'
+    user.should respond_to :name_was
   end
 
   it "has attribute change method" do
     user = User.new(:name => 'John')
-    user.name = 'Steve'
-    user.name_change.should == ['John', 'Steve']
+    user.should respond_to :name_change
   end
 
   it "has attribute will change! method" do

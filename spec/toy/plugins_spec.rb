@@ -9,19 +9,29 @@ describe Toy::Plugins do
 
   describe ".plugin" do
     before do
-      class_methods_mod    = Module.new { def foo; 'foo' end }
-      instance_methods_mod = Module.new { def bar; 'bar' end }
+      class_methods_mod    = Module.new {
+        def foo;
+          'foo'
+        end }
+      instance_methods_mod = Module.new {
+        def bar;
+          'bar'
+        end }
 
       @mod = Module.new { extend ActiveSupport::Concern }
-      @mod.const_set(:ClassMethods,    class_methods_mod)
-      @mod.const_set(:InstanceMethods, instance_methods_mod)
+      @mod.const_set(:ClassMethods, class_methods_mod)
+      if ActiveSupport::VERSION::MAJOR == 3 && ActiveSupport::VERSION::MINOR > 1 # ActiveSupport 3.2
+        @mod.send :include, instance_methods_mod
+      else # ActiveSupport 3.0, 3.1
+        @mod.const_set(:InstanceMethods, instance_methods_mod)
+      end
 
       Toy.plugin(@mod)
     end
 
     it "includes module in all models" do
       [User, Game].each do |model|
-        model.foo.should     == 'foo'
+        model.foo.should == 'foo'
         model.new.bar.should == 'bar'
       end
     end
@@ -32,7 +42,7 @@ describe Toy::Plugins do
 
     it "adds plugins to classes declared after plugin was called" do
       klass = Class.new { include Toy::Store }
-      klass.foo.should     == 'foo'
+      klass.foo.should == 'foo'
       klass.new.bar.should == 'bar'
     end
   end

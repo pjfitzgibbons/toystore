@@ -5,7 +5,11 @@ module Toy
 
     included do
       include Identity
-      attribute_method_suffix('', '=', '?')
+      if ActiveSupport::VERSION::MAJOR == 3 && ActiveSupport::VERSION::MINOR > 1 # ActiveSupport 3.2
+        attribute_method_suffix('=', '?')
+      else # ActiveSupport 3.0, 3.1
+        attribute_method_suffix('', '=', '?')
+      end
     end
 
     module ClassMethods
@@ -18,7 +22,9 @@ module Toy
       end
 
       def attribute(key, type, options = {})
-        Attribute.new(self, key, type, options)
+        attr = Attribute.new(self, key, type, options)
+        define_attribute_methods [key]
+        attr
       end
 
       def attribute?(key)
@@ -54,8 +60,19 @@ module Toy
       attrs.each do |key, value|
         if respond_to?("#{key}=")
           send("#{key}=", value)
+          set_will_change(key)
         elsif attribute_method?(key)
           write_attribute(key, value)
+          set_will_change(key)
+        end
+      end
+    end
+
+    def set_will_change(key)
+      attr = self.class.attributes[key.to_s]
+      if attr
+        unless (attr.type.is_a?(Array) || attr.type.is_a?(Toy::Object))
+          send("#{key}_will_change!")
         end
       end
     end

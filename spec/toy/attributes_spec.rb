@@ -5,13 +5,13 @@ describe Toy::Attributes do
 
   describe "including" do
     it "adds id attribute" do
-      User.attributes.keys.should == ['id']
+      User.attributes.keys.should include 'id'
     end
   end
 
   describe ".attributes" do
     it "defaults to hash with id" do
-      User.attributes.keys.should == ['id']
+      User.attributes.keys.should include 'id'
     end
   end
 
